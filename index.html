@@ -546,16 +546,38 @@
         },
         body: JSON.stringify(formData)
       })
-      .then(function() {
-        btn.innerText = 'Submitted!';
-        document.getElementById('formSuccess').style.display = 'block';
-        form.reset();
+      .then(function(res) {
+        return res.json();
+      })
+      .then(function(data) {
+        btn.innerText = 'Submit Request';
+        btn.disabled = false;
+        var successDiv = document.getElementById('formSuccess');
+        if (data.success === 'true' || data.success === true) {
+          successDiv.innerHTML = '✓ Thank you! Your request has been sent to priyanka@navyaintel.com and sj@navyaintel.com. We will get in touch with you shortly.';
+          successDiv.style.background = '#e6f9ed';
+          successDiv.style.color = '#1b7e3e';
+          successDiv.style.display = 'block';
+          form.reset();
+        } else if (data.message && data.message.indexOf('Activation') !== -1) {
+          successDiv.innerHTML = '⚠️ <strong>One-time activation required:</strong> An activation link was just sent to <strong>priyanka@navyaintel.com</strong> from FormSubmit. Please open that email and click <em>"Activate Form"</em> to start receiving submissions.';
+          successDiv.style.background = '#fff4e5';
+          successDiv.style.color = '#b76e00';
+          successDiv.style.display = 'block';
+        } else {
+          successDiv.innerHTML = '✓ ' + (data.message || 'Request received! We will be in touch shortly.');
+          successDiv.style.background = '#e6f9ed';
+          successDiv.style.color = '#1b7e3e';
+          successDiv.style.display = 'block';
+        }
         generateCaptcha();
       })
       .catch(function() {
-        // Fallback: mailto to both recipients
-        btn.innerText = 'Submitted!';
-        document.getElementById('formSuccess').style.display = 'block';
+        btn.innerText = 'Submit Request';
+        btn.disabled = false;
+        var successDiv = document.getElementById('formSuccess');
+        successDiv.innerHTML = '✓ Opening email client to send request directly...';
+        successDiv.style.display = 'block';
         window.location.href = 'mailto:priyanka@navyaintel.com?cc=sj@navyaintel.com&subject=Beta Request from ' + encodeURIComponent(formData.name) + '&body=' + encodeURIComponent(formData.message + '\n\nPhone: ' + formData.phone + '\nCompany: ' + formData.company);
         generateCaptcha();
       });
